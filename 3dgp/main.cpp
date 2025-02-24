@@ -16,13 +16,18 @@ using namespace glm;
 
 // 3D Models
 C3dglModel street;
-
+C3dglSkyBox skybox;
 C3dglModel Aj;			// the boy's name is Aj
 C3dglModel idle, run;	// additional animations (skinless)
 
 
 // GLSL Objects (Shader Program)
 C3dglProgram program;
+
+//Skybox day light
+GLuint dayLight = 1;
+// light attenuation
+GLuint lightAtt = 0;
 
 // The View Matrix
 mat4 matrixView;
@@ -32,6 +37,26 @@ float maxspeed = 4.f;	// camera max speed
 float accel = 4.f;		// camera acceleration
 vec3 _acc(0), _vel(0);	// camera acceleration and velocity vectors
 float _fov = 60.f;		// field of view (zoom)
+
+void initLights(GLuint dayLight)
+{
+	program.sendUniform("lightAmbient.color", vec3(dayLight * 0.1, dayLight * 0.1, dayLight * 0.1));
+	program.sendUniform("lightEmissive.color", vec3(0.0, 0.0, 0.0));
+	program.sendUniform("lightDir.direction", vec3(1.0, 0.5, 1.0));
+	program.sendUniform("lightDir.diffuse", vec3(dayLight * 1.0, dayLight * 1.0, dayLight * 1.0));
+
+	GLuint nightLight = 1 - dayLight;
+	program.sendUniform("lightPoint1.diffuse", vec3(nightLight * 0.5, nightLight * 0.5, nightLight * 0.5));
+	program.sendUniform("lightPoint1.specular", vec3(nightLight * 1.0, nightLight * 1.0, nightLight * 1.0));
+	program.sendUniform("lightPoint2.diffuse", vec3(nightLight * 0.5, nightLight * 0.5, nightLight * 0.5));
+	program.sendUniform("lightPoint2.specular", vec3(nightLight * 1.0, nightLight * 1.0, nightLight * 1.0));
+	program.sendUniform("lightPoint3.diffuse", vec3(nightLight * 0.5, nightLight * 0.5, nightLight * 0.5));
+	program.sendUniform("lightPoint3.specular", vec3(nightLight * 1.0, nightLight * 1.0, nightLight * 1.0));
+	program.sendUniform("lightPoint4.diffuse", vec3(nightLight * 0.5, nightLight * 0.5, nightLight * 0.5));
+	program.sendUniform("lightPoint4.specular", vec3(nightLight * 1.0, nightLight * 1.0, nightLight * 1.0));
+	program.sendUniform("lightPoint5.diffuse", vec3(nightLight * 0.5, nightLight * 0.5, nightLight * 0.5));
+	program.sendUniform("lightPoint5.specular", vec3(nightLight * 1.0, nightLight * 1.0, nightLight * 1.0));
+}
 
 bool init()
 {
@@ -84,8 +109,20 @@ bool init()
 	Aj.loadAnimations(&idle);	// Aj model has no animations
 	Aj.loadAnimations(&run);	// but can load them from idle and run
 
+	// load Sky Box
+	if (!skybox.load("models\\TropicalSunnyDay\\TropicalSunnyDayFront1024.jpg",
+		"models\\TropicalSunnyDay\\TropicalSunnyDayLeft1024.jpg",
+		"models\\TropicalSunnyDay\\TropicalSunnyDayBack1024.jpg",
+		"models\\TropicalSunnyDay\\TropicalSunnyDayRight1024.jpg",
+		"models\\TropicalSunnyDay\\TropicalSunnyDayUp1024.jpg",
+		"models\\TropicalSunnyDay\\TropicalSunnyDayDown1024.jpg")) return false;
+
 	// Send the texture info to the shaders
 	program.sendUniform("texture0", 0);
+
+	// setup lights:
+	initLights(dayLight);
+	program.sendUniform("lightAttOn", lightAtt);
 
 	// setup lights:
 	program.sendUniform("lightAmbient.color", vec3(0.1, 0.1, 0.1));
@@ -122,6 +159,23 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 {
 	mat4 m;
 
+	program.sendUniform("lightAttOn", lightAtt);
+
+	if (dayLight)
+	{
+		// prepare ambient light for the skybox
+		program.sendUniform("lightAmbient.color", vec3(1.0, 1.0, 1.0));
+		program.sendUniform("materialAmbient", vec3(1.0, 1.0, 1.0));
+		program.sendUniform("materialDiffuse", vec3(0.0, 0.0, 0.0));
+
+		// render the skybox
+		m = matrixView;
+		skybox.render(m);
+
+		// revert normal light after skybox
+		program.sendUniform("lightAmbient.color", vec3(0.4, 0.4, 0.4));
+	}
+
 	// Camera position
 	vec3 pos = getPos(matrixView);
 
@@ -139,6 +193,8 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	m = translate(matrixView, vec3(-0.00, 0.0, 2));
 	m = scale(m, vec3(0.01f, 0.01f, 0.01f));
 	Aj.render(m);
+
+
 
 	// Diagnostic strings
 	print(0, 0, std::format("Camera position: ({:.2f}, {:.2f}, {:.2f})", pos.x, pos.y, pos.z));
