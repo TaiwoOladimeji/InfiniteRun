@@ -11,10 +11,14 @@ uniform vec3 materialDiffuse;
 
 in vec3 aVertex;
 in vec3 aNormal;
+in vec2 aTexCoord;
+
 
 out vec4 color;
 out vec4 position;
 out vec3 normal;
+out vec2 texCoord0;
+
 
 // Light declarations
 struct AMBIENT
@@ -60,4 +64,8 @@ void main(void)
 	color += AmbientLight(lightAmbient);
 	color += DirectionalLight(lightDir1);
 	color += DirectionalLight(lightDir2);
+
+
+	// calculate texture coordinate
+	texCoord0 = aTexCoord;
 }

@@ -63,9 +63,14 @@ bool init()
 	if (!program.link()) return false;
 	if (!program.use(true)) return false;
 
+	// create & load textures
+	glActiveTexture(GL_TEXTURE0);
+
 	// glut additional setup
 	glutSetVertexAttribCoord3(program.getAttribLocation("aVertex"));
 	glutSetVertexAttribNormal(program.getAttribLocation("aNormal"));
+
+
 
 	// load your 3D models here!
 	street.load("models\\street\\Street environment_V01.obj");
@@ -120,11 +125,20 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	// Camera position
 	vec3 pos = getPos(matrixView);
 
+	// This vector automatically amends the Y-coordinate of the wolf according to the terrain elevation
+	//vec3 amendY = vec3(vec3(0, street.getInterpolatedHeight(wolfPos.x, wolfPos.z), 0));
+ 
 	// render the street
 	program.sendUniform("lightAmbient.color", vec3(0.4, 0.4, 0.4));
 	m = matrixView;
 	m = translate(m, vec3(0, -0.07, 47));	// 47 is half of the depth of the town tile
 	street.render(m);
+
+	// render Aj
+	m = matrixView;
+	m = translate(matrixView, vec3(-0.00, 0.0, 2));
+	m = scale(m, vec3(0.01f, 0.01f, 0.01f));
+	Aj.render(m);
 
 	// Diagnostic strings
 	print(0, 0, std::format("Camera position: ({:.2f}, {:.2f}, {:.2f})", pos.x, pos.y, pos.z));
