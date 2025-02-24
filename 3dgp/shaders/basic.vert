@@ -10,9 +10,15 @@ uniform vec3 materialAmbient;
 uniform vec3 materialDiffuse;
 uniform float fogDensity = 0.005;
 
+// Bone Transforms
+#define MAX_BONES 100
+uniform mat4 bones[MAX_BONES];
+
 in vec3 aVertex;
 in vec3 aNormal;
 in vec2 aTexCoord;
+in ivec4 aBoneId; // Bone Ids
+in vec4 aBoneWeight; // Bone Weights
 
 
 out vec4 color;
@@ -74,4 +80,13 @@ void main(void)
 
 	//calculate the fogfactor
 	fogFactor = exp2(-fogDensity * length(position));
+
+
+	mat4 matrixBone = (bones[aBoneId[0]] * aBoneWeight[0] +
+				  	   bones[aBoneId[1]] * aBoneWeight[1] +
+					bones[aBoneId[2]] * aBoneWeight[2] +
+					bones[aBoneId[3]] * aBoneWeight[3]);
+
+
+
 }

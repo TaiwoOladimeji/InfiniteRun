@@ -97,6 +97,7 @@ bool init()
 
 
 
+
 	// load your 3D models here!
 	street.load("models\\street\\Street environment_V01.obj");
 	street.loadMaterials("models\\street\\");
@@ -187,6 +188,34 @@ void renderScene(mat4& matrixView, float time, float deltaTime)
 	m = matrixView;
 	m = translate(m, vec3(0, -0.07, 47));	// 47 is half of the depth of the town tile
 	street.render(m);
+	program.sendUniform("lightAmbient.color", vec3(0.4, 0.4, 0.4));
+	m = matrixView;
+	m = translate(m, vec3(0, -0.07, 94));
+	street.render(m,1);
+	program .sendUniform("lightAmbient.color", vec3(0.4, 0.4, 0.4));
+	m = matrixView;
+	m = translate(m, vec3(0, -0.07, 188));
+	street.render(m,2);
+	program.sendUniform("lightAmbient.color", vec3(0.4, 0.4, 0.4));
+	m = matrixView;
+	m = translate(m, vec3(0, -0.07, 376));
+	street.render(m,3);
+	program.sendUniform("lightAmbient.color", vec3(0.4, 0.4, 0.4));
+	m = matrixView;
+	m = translate(m, vec3(0, -0.07, 752));
+	street.render(m,4);
+	program.sendUniform("lightAmbient.color", vec3(0.4, 0.4, 0.4));
+	m = matrixView;
+	m = translate(m, vec3(0, -0.07, 1504));
+	street.render(m,5);
+	program.sendUniform("lightAmbient.color", vec3(0.4, 0.4, 0.4));
+	m = matrixView;
+	m = translate(m, vec3(0, -0.07, 3008));
+	street.render(m,6);
+	program.sendUniform("lightAmbient.color", vec3(0.4, 0.4, 0.4));
+	m = matrixView;
+	m = translate(m, vec3(0, -0.07, 6016));
+	street.render(m,7);
 
 	// render Aj
 	m = matrixView;
